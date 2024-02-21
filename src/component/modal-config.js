@@ -20,19 +20,28 @@ function RenderButtons({optMin, optMax, handleClose, props}){
   })
 }
 
-export default function ModalConfig({show, handleClose, ...props}){
+export default function ModalConfig({show, handleClose, isGameComplete, ...props}){
   return (
   <Modal show={show} onHide={handleClose} backdrop="static">
-    <Modal.Header closeButton>Game Configuration</Modal.Header>
+    <Modal.Header><div className="text-center w-100 fw-bold fs-3">Game Configuration</div></Modal.Header>
     <Modal.Body>
+      {isGameComplete ? (
+        <div className="text-center">
+          <div className="fs-1">Congratulations!</div>
+          <div>Let's play more!</div>
+          <hr />
+        </div>
+      ) : <></>}
       <div className='mb-3 text-center'>Select Number of Cards to Play</div>
       <Row xs={3} className='g-2'>
         <RenderButtons optMin={4} optMax={20} handleClose={handleClose} props={props}/>
       </Row>
     </Modal.Body>
-    <Modal.Footer>
-      <Button variant="dark" onClick={handleClose}>Done</Button>
-    </Modal.Footer>
+    {!isGameComplete ? (
+      <Modal.Footer>
+        <Button variant="dark" onClick={handleClose}>Done</Button>
+      </Modal.Footer>
+    ) : <></>}
   </Modal>
   )
 }

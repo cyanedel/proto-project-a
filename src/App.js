@@ -21,6 +21,7 @@ import { ReactComponent as IconZeus } from './assets/zeus.svg';
 function App() {
   const [oScore, setOScore] = useState(0);
   const [gameScore, setGameScore] = useState(0);
+  const [isGameComplete, setIsGameComplete] = useState(false);
   const [showModalConfig, setShowModalConfig] = useState(false);
   const [cardNum, setCardNum] = useState(0);
   const [cardList, setCardList] = useState([]);
@@ -56,6 +57,7 @@ function App() {
     setCardStatelist(Array(cardNum).fill(false))
     setCardCompare([])
     setGameScore(0)
+    setIsGameComplete(false)
   }, [cardNum])
 
   useEffect(()=>{
@@ -80,8 +82,10 @@ function App() {
   }, [cardCompare])
 
   useEffect(()=>{
-    if(gameScore === cardNum/2){
+    if(cardNum >0 && gameScore === cardNum/2){
       setOScore(ogs=>ogs+cardNum)
+      setIsGameComplete(true)
+      setShowModalConfig(true)
     }
   }, [gameScore, cardNum])
 
@@ -105,6 +109,7 @@ function App() {
         handleClose={()=>{setShowModalConfig(false)}}
         cardNum={cardNum}
         setCardNum={setCardNum}
+        isGameComplete={isGameComplete}
       />
       <Container>
         <div className='d-flex align-items-center justify-content-between bg-light p-3 rounded'>
@@ -114,8 +119,9 @@ function App() {
           </div>
         </div>
       </Container>
+      {cardNum ? (
       <Container className='mt-3 mb-5'>
-        <div className='mb-3'>Playing with: {cardNum} cards</div>
+        <div className='mb-3'>Currently playing with: {cardNum} cards</div>
         <Row className='g-2 align-items-center justify-content-center'>
           {cardList.map((item, index)=>{
             return (
@@ -126,7 +132,7 @@ function App() {
               )
           })}
         </Row>
-      </Container>
+      </Container>): <Button variant='success' className={`my-5`} onClick={()=>{setShowModalConfig(true)}}>Let's Start</Button>}
     </div>
   );
 }
