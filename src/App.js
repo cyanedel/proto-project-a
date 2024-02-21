@@ -19,7 +19,9 @@ import { ReactComponent as IconZeus } from './assets/zeus.svg';
 function App() {
   const [cardNum, setCardNum] = useState(0);
   const [cardList, setCardList] = useState([]);
-  const [cardStatelist, setCardStatelist] = useState([])
+  const [cardStatelist, setCardStatelist] = useState([]);
+  const [cardCompare, setCardCompare] = useState([]);
+  const [showOverlay, setShowOverlay] = useState(false);
 
   function generateOptions(nMin, nMax){
     let a = []
@@ -70,21 +72,48 @@ function App() {
     setCardStatelist(Array(cardNum).fill(false))
   }, [cardNum])
 
-  function handleCardClick(cardIndex){
-    setCardStatelist(prevState => prevState.map((item, index)=>{
-      return index === cardIndex ? !item : item
-    }))
+  useEffect(()=>{
+    if(cardCompare.length === 2){
+      setShowOverlay(true)
+      console.log(cardCompare)
+      setTimeout(() => {
+        if(cardCompare[0][1] === cardCompare[1][1]){
+          console.log('same!')
+        } else {
+          console.log('beda!')
+          cardCompare.forEach( item => {
+            setCardStatelist(prevState => prevState.map((item2, index)=>{
+              return index === item[0] ? false : item2
+            }))
+          })
+        }
+        setCardCompare([])
+        setShowOverlay(false)
+      }, 1000);
+    }
+  }, [cardCompare])
+
+  function handleCardClick(cardIndex, cardTrueVal){
+    if(!cardStatelist[cardIndex]){
+      setCardStatelist(prevState => prevState.map((item, index)=>{
+        return index === cardIndex ? !item : item
+      }))
+  
+      const prevCardCompare = cardCompare.slice()
+      prevCardCompare.push([cardIndex, cardTrueVal])
+      setCardCompare(prevCardCompare)
+    }
   }
 
   return (
     <div className="App">
+      {showOverlay ? <div className='game-overlay'></div> : <></>}
       <Container className='my-5 mw-1'>
-        {/* <div>{cardList}</div> */}
         <div className='mb-3'>Playing with: {cardNum} cards</div>
         <Row className='g-2 align-items-center justify-content-center'>
           {cardList.map((item, index)=>{
             return (
-              <Card key={index} className={`m-1 p-3 d-flex shadow ${cardStatelist[index] ? "flip": ""}`} onClick={()=>handleCardClick(index)}>
+              <Card key={index} className={`m-1 p-3 d-flex shadow ${cardStatelist[index] ? "flip": ""}`} onClick={()=>handleCardClick(index, item[0])}>
                 <div className='card-front bg-light text-black'>{cardStatelist[index] ? item[1] : ""}</div>
                 <div className='card-back bg-dark'><IconHat width="64" height="64" className='fill-white' /></div>
               </Card>
