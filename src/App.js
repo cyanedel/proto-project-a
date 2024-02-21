@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import './App.css';
-import { Container, Row, Col, Button, Card } from 'react-bootstrap';
+import { Container, Row, Button, Card } from 'react-bootstrap';
+import ModalConfig from './component/modal-config';
 
 import { ReactComponent as IconHat } from './assets/hat.svg';
+import { ReactComponent as IconCog } from './assets/cog-wheel.svg';
 
 import { ReactComponent as IconFlame } from './assets/flames.svg';
 import { ReactComponent as IconWater } from './assets/water.svg';
@@ -17,35 +19,19 @@ import { ReactComponent as IconPoop } from './assets/poop.svg';
 import { ReactComponent as IconZeus } from './assets/zeus.svg';
 
 function App() {
+  const [oScore, setOScore] = useState(0);
+  const [gameScore, setGameScore] = useState(0);
+  const [showModalConfig, setShowModalConfig] = useState(false);
   const [cardNum, setCardNum] = useState(0);
   const [cardList, setCardList] = useState([]);
   const [cardStatelist, setCardStatelist] = useState([]);
   const [cardCompare, setCardCompare] = useState([]);
   const [showOverlay, setShowOverlay] = useState(false);
 
-  function generateOptions(nMin, nMax){
-    let a = []
-    for(let i=nMin; i<=nMax;i++){
-      if(i%2===0){
-        a.push(i)
-      }
-    }
-    return a
-  }
-
   function shuffle(array) {
     const shuffled = array.slice();
     shuffled.sort(() => Math.random() - 0.5);
     return shuffled;
-  }
-
-  function RenderButtons({optMin, optMax}){
-    const opt = generateOptions(optMin, optMax)
-    return opt.map((item, index)=>{
-      return <Col key={index}>
-        <Button variant={`${cardNum===item ? "success": "dark" }`} className='w-100' onClick={()=>{setCardNum(item)}}>{item}</Button>
-      </Col>
-    })
   }
 
   useEffect(()=>{
@@ -66,10 +52,10 @@ function App() {
     const base = shuffledVariants.slice(0,cardNum/2)
     const dups = base.concat(base)
     const shuffled = shuffle(dups)
-    // const defaultCardState = Array(cardNum).fill(false)
-    // const shuffledWithState = shuffled.map((item)=>{return [item, false]})
     setCardList(shuffled)
     setCardStatelist(Array(cardNum).fill(false))
+    setCardCompare([])
+    setGameScore(0)
   }, [cardNum])
 
   useEffect(()=>{
@@ -78,9 +64,9 @@ function App() {
       console.log(cardCompare)
       setTimeout(() => {
         if(cardCompare[0][1] === cardCompare[1][1]){
+          setGameScore(gs=>gs+1)
           console.log('same!')
         } else {
-          console.log('beda!')
           cardCompare.forEach( item => {
             setCardStatelist(prevState => prevState.map((item2, index)=>{
               return index === item[0] ? false : item2
@@ -92,6 +78,12 @@ function App() {
       }, 1000);
     }
   }, [cardCompare])
+
+  useEffect(()=>{
+    if(gameScore === cardNum/2){
+      setOScore(ogs=>ogs+cardNum)
+    }
+  }, [gameScore, cardNum])
 
   function handleCardClick(cardIndex, cardTrueVal){
     if(!cardStatelist[cardIndex]){
@@ -106,9 +98,23 @@ function App() {
   }
 
   return (
-    <div className="App">
+    <div className="App mt-3 mb-5">
       {showOverlay ? <div className='game-overlay'></div> : <></>}
-      <Container className='my-5 mw-1'>
+      <ModalConfig
+        show={showModalConfig}
+        handleClose={()=>{setShowModalConfig(false)}}
+        cardNum={cardNum}
+        setCardNum={setCardNum}
+      />
+      <Container>
+        <div className='d-flex align-items-center justify-content-between bg-light p-3 rounded'>
+          <div><p className='fw-bold fs-4 m-0'>Overall score: {oScore}</p></div>
+          <div className='holder-game-conf'>
+            <Button variant='light' className='btn-game-conf' onClick={()=>{setShowModalConfig(true)}}><IconCog height={24} width={24} /></Button>
+          </div>
+        </div>
+      </Container>
+      <Container className='mt-3 mb-5'>
         <div className='mb-3'>Playing with: {cardNum} cards</div>
         <Row className='g-2 align-items-center justify-content-center'>
           {cardList.map((item, index)=>{
@@ -119,12 +125,6 @@ function App() {
               </Card>
               )
           })}
-        </Row>
-      </Container>
-      <Container className='my-5 mw-2'>
-        <div className='mb-3'>Select Number of Cards to Play</div>
-        <Row xs={3} className='g-2'>
-          <RenderButtons optMin={4} optMax={20} />
         </Row>
       </Container>
     </div>
